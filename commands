@@ -1,0 +1,42 @@
+########## Chapter: Enable Full HD ##########
+
+### BASH (Linux) ###
+sudo nano /etc/default/grub
+# Edit the below line and add the HyperV entry
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash video=hyperv_fb:1920x1080"
+sudo update-grub && sudo reboot
+# For Redhat based distros
+sudo grubby --update-kernel=ALL --args=”video=hyperv_fb:1920x1080”
+
+
+########## Chapter: Enable Enhanced Session ########## 
+
+### PowerShell ###
+# Set EnhancedSessionTransportType and stop/start VM
+$daVM=[name]
+$daVM="(aaDT)_UbuntuXRDP"
+Get-VM $daVM | Select-Object EnhancedSessionTransportType
+Stop-VM $daVM
+Set-VM -VMName $daVM -EnhancedSessionTransportType HvSocket 
+Get-VM $daVM | Select-Object *
+Start-VM $daVM ; vmconnect.exe localhost $daVM
+
+
+### BASH (Linux) ###
+sudo apt update -y
+sudo apt upgrade -y
+sudo apt install -y xrdp
+sudo systemctl stop xrdp
+# Edit the /etc/xrdp/xrdp.ini file 
+  port=vsock://-1:3389
+  use_vsock=false
+  security_layer=rdp
+  bitmap_compression=false
+# Edit the /etc/xrdp/startwm.sh file (for 24.04 only)
+  export GNOME_SHELL_SESSION_MODE=ubuntu
+  export XDG_CURRENT_DESKTOP=ubuntu:GNOME
+sudo systemctl daemon-reload
+sudo poweroff
+
+
+####################
